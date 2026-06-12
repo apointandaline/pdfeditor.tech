@@ -98,18 +98,33 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
     const { x, y } = pointerToCanonical(e.clientX, e.clientY);
 
     if (tool === 'text') {
+      const newId = newAnnotationId();
+      const newW = DEFAULT_TEXT_W;
+      const newH = Math.max(DEFAULT_TEXT_H, style.fontSize + 8);
+      console.log(
+        `[pdfeditor] adding text id=${newId} at x=${x} y=${y} w=${newW} h=${newH} scale=${scale}`,
+      );
       add({
-        id: newAnnotationId(),
+        id: newId,
         page: pageNumber,
         kind: 'text',
         x, y,
-        w: DEFAULT_TEXT_W,
-        h: Math.max(DEFAULT_TEXT_H, style.fontSize + 8),
+        w: newW,
+        h: newH,
         text: '',
         fontSize: style.fontSize,
         fontFamily: style.fontFamily,
         color: style.color,
       });
+      setTimeout(() => {
+        const after = useEditorStore.getState();
+        const list = after.annotations[pageNumber] ?? [];
+        const found = list.find((a) => a.id === newId);
+        console.log(
+          `[pdfeditor] after add: store has ${list.length} on page ${pageNumber}, ` +
+          `found=${!!found}, selectedId=${after.selectedId}, pendingFocusId=${after.pendingFocusId}`,
+        );
+      }, 0);
       return;
     }
     if (tool === 'select') {

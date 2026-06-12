@@ -47,6 +47,11 @@ export function TextBox({ annotation, scale }: Props) {
   // create a text box pre-filled with the original text and immediately
   // hand the cursor to the user.
   useEffect(() => {
+    console.log(
+      `[pdfeditor] TextBox mount/focus-check id=${annotation.id} ` +
+      `pendingFocusId=${pendingFocusId} match=${pendingFocusId === annotation.id} ` +
+      `initialDone=${initialFocusDone.current} elPresent=${!!editRef.current}`,
+    );
     if (initialFocusDone.current) return;
     if (pendingFocusId !== annotation.id) return;
     const el = editRef.current;
