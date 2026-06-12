@@ -238,7 +238,11 @@ export function TextBox({ annotation, scale }: Props) {
   // Only capture pointer when select or text tool is active. Other tools should
   // be able to draw OVER the box without it stealing clicks.
   const interactive = tool === 'select' || tool === 'text';
-  const showHandles = isSelected && !editing;
+  // Show handles whenever the box is selected — including while editing — so
+  // a freshly-created textbox (which auto-focuses into edit mode) can still be
+  // resized without having to press Escape first. Handles sit at corners and
+  // stopPropagation on their own pointerdown, so they don't disturb typing.
+  const showHandles = isSelected;
 
   return (
     <div
