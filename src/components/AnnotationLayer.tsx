@@ -120,9 +120,15 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
       // ExistingItemsLayer (rendered above this) own the interaction.
       return;
     }
-    if (tool === 'image') {
+    if (tool === 'image' || tool === 'signature') {
       const pending = useEditorStore.getState().pendingImage;
       if (!pending) return;
+      // Only place a pending item that matches the active tool — e.g. don't
+      // drop an uploaded image just because the user happened to switch to
+      // the signature tool with the image still staged.
+      const expectedKind = tool === 'signature' ? 'signature' : 'image';
+      const pendingKind = pending.kind ?? 'image';
+      if (pendingKind !== expectedKind) return;
       // Cap default placement size so giant source images don't fill the page.
       const MAX_DEFAULT_W = 240;
       let w = pending.w, h = pending.h;

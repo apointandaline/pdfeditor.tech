@@ -18,9 +18,17 @@ export interface EditorState extends Snapshot {
   // also trigger an edit-mode entry. Cleared by the TextBox once consumed.
   pendingFocusId: string | null;
 
-  // Image staged for the Insert Image tool. Set when the user picks a file,
-  // consumed on the next page click that places the annotation.
-  pendingImage: { src: string; w: number; h: number; name?: string } | null;
+  // Image staged for the Insert Image or Signature tool. Set when the user
+  // picks a file (or generates a cursive signature); consumed on the next
+  // page click that places it. `kind` distinguishes the two so the StylePanel
+  // can show the right hint and the click handler can route per-tool.
+  pendingImage: {
+    src: string;
+    w: number;
+    h: number;
+    name?: string;
+    kind?: 'image' | 'signature';
+  } | null;
 
   // Tool / style
   setTool: (t: Tool) => void;

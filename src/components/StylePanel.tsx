@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useEditorStore } from '../state/editorStore';
 import type { Tool, ToolStyle } from '../types/annotation';
+import { renderSignature } from '../lib/signature';
 
 const STROKE_TOOLS = new Set<Tool>(['pen', 'highlighter', 'line', 'arrow', 'rect', 'ellipse']);
 const FILL_TOOLS   = new Set<Tool>(['rect', 'ellipse']);
@@ -31,6 +33,10 @@ export function StylePanel() {
 
   if (tool === 'image') {
     return <ImageToolHint />;
+  }
+
+  if (tool === 'signature') {
+    return <SignaturePanel />;
   }
 
   return (
@@ -89,6 +95,7 @@ function labelFor(t: Tool): string {
     case 'text':        return 'Text';
     case 'edit-existing': return 'Edit Existing';
     case 'image':         return 'Image';
+    case 'signature':     return 'Signature';
     case 'pen':         return 'Pen';
     case 'highlighter': return 'Highlighter';
     case 'line':        return 'Line';
@@ -97,6 +104,82 @@ function labelFor(t: Tool): string {
     case 'ellipse':     return 'Ellipse';
     case 'select':      return 'Select';
   }
+}
+
+function SignaturePanel() {
+  const pendingImage = useEditorStore((s) => s.pendingImage);
+  const setPendingImage = useEditorStore((s) => s.setPendingImage);
+  const [name, setName] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isStagedSignature =
+    pendingImage != null && pendingImage.kind === 'signature';
+
+  async function handleGenerate() {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setGenerating(true);
+    setError(null);
+    try {
+      const { src, w, h } = await renderSignature(trimmed);
+      setPendingImage({ src, w, h, name: trimmed, kind: 'signature' });
+    } catch (e) {
+      console.error('Signature render failed:', e);
+      setError('Could not render signature');
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function handleClear() {
+    setPendingImage(null);
+  }
+
+  return (
+    <div className="style-panel">
+      <span className="style-panel__tool">Signature</span>
+      <label className="style-field">
+        <span className="style-field__label">Name</span>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleGenerate();
+            }
+          }}
+          placeholder="Type your name"
+          className="signature-input"
+          autoFocus
+        />
+      </label>
+      {isStagedSignature ? (
+        <>
+          <img
+            src={pendingImage.src}
+            alt="Signature preview"
+            className="signature-preview"
+          />
+          <span className="style-panel__hint">
+            Click anywhere on the page to place
+          </span>
+          <button onClick={handleClear} title="Discard staged signature">Clear</button>
+        </>
+      ) : (
+        <button
+          onClick={handleGenerate}
+          disabled={!name.trim() || generating}
+          title="Render the name in cursive"
+        >
+          {generating ? 'Generating…' : 'Generate'}
+        </button>
+      )}
+      {error && <span className="style-panel__hint">{error}</span>}
+    </div>
+  );
 }
 
 function ImageToolHint() {

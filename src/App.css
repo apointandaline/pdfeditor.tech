@@ -377,12 +377,39 @@ select {
 .cursor-select   .viewer { cursor: default; }
 .cursor-text     .viewer,
 .cursor-edit-existing .viewer, .cursor-image .viewer { cursor: text; }
+.cursor-signature .viewer { cursor: crosshair; }
 .cursor-pen      .viewer,
 .cursor-highlighter .viewer,
 .cursor-line     .viewer,
 .cursor-arrow    .viewer,
 .cursor-rect     .viewer,
 .cursor-ellipse  .viewer { cursor: crosshair; }
+
+/* ---------- Signature panel ---------- */
+.signature-input {
+  font: inherit;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  min-width: 160px;
+}
+.signature-input:focus {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+.signature-preview {
+  display: block;
+  max-width: 200px;
+  max-height: 80px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px;
+  object-fit: contain;
+}
 
 /* ---------- Existing-items hotspots ---------- */
 .existing-items-layer {

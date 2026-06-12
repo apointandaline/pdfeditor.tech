@@ -7,6 +7,7 @@ const KEY_TO_TOOL: Record<string, Tool> = {
   t: 'text',
   e: 'edit-existing',
   i: 'image',
+  s: 'signature',
   p: 'pen',
   h: 'highlighter',
   l: 'line',

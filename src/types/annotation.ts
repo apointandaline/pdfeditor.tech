@@ -94,6 +94,7 @@ export type Tool =
   | 'text'
   | 'edit-existing'  // hover existing PDF text or image → click to whiteout + replace
   | 'image'          // upload + place a new image
+  | 'signature'      // type a name → render in cursive → click to place as image
   | 'pen'
   | 'highlighter'
   | 'line'

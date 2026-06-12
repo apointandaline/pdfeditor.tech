@@ -36,6 +36,14 @@ export const EditTextIcon = () => (
   </svg>
 );
 
+export const SignatureIcon = () => (
+  <svg {...baseProps}>
+    {/* A flowing signature-like curve over a baseline */}
+    <path d="M3 16 L17 16" />
+    <path d="M4 12 C 6 6, 8 14, 10 9 C 11 6, 13 12, 16 7" />
+  </svg>
+);
+
 export const ImageIcon = () => (
   <svg {...baseProps}>
     <rect x="3" y="4" width="14" height="12" rx="1" />
