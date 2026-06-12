@@ -62,7 +62,7 @@ export function Landing() {
         </section>
       </main>
       <footer className="landing__footer">
-        <span>&copy; {new Date().getFullYear()} pdfeditor.tech</span>
+        <span>&copy; {new Date().getFullYear()} pdfedits.tech</span>
         <span>
           <a href="https://github.com/apointandaline/pdfeditor.tech" target="_blank" rel="noreferrer">
             Source on GitHub

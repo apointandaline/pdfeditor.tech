@@ -1,7 +1,7 @@
-# Deploying pdfeditor.tech
+# Deploying pdfedits.tech
 
 The site is built with Vite + React, deployed to GitHub Pages via Actions,
-and served on `pdfeditor.tech` via a CNAME file + DNS records you set at
+and served on `pdfedits.tech` via a CNAME file + DNS records you set at
 your domain registrar.
 
 ## What ships
@@ -17,12 +17,12 @@ your domain registrar.
 1. Repo: <https://github.com/apointandaline/pdfeditor.tech>
 2. Settings → Pages → **Source: GitHub Actions** (the deploy workflow will
    show up after first push)
-3. Custom domain: `pdfeditor.tech` — GitHub auto-detects from the CNAME
+3. Custom domain: `pdfedits.tech` — GitHub auto-detects from the CNAME
    file in your build artifact. Once DNS is verified, check **Enforce HTTPS**.
 
 ## DNS records (set at your domain registrar)
 
-Apex (`pdfeditor.tech`) — four **A** records pointing at GitHub Pages IPs:
+Apex (`pdfedits.tech`) — four **A** records pointing at GitHub Pages IPs:
 
 | Type | Name | Value             |
 |------|------|-------------------|
@@ -58,10 +58,10 @@ first time):
 
 ```bash
 # Should return one of the GitHub Pages IPs above
-dig +short pdfeditor.tech
+dig +short pdfedits.tech
 
 # Should reach the site and serve HTML (not a registrar parking page)
-curl -I https://pdfeditor.tech
+curl -I https://pdfedits.tech
 ```
 
 GitHub's Pages settings page will also light up green once it verifies
