@@ -72,6 +72,11 @@ export function TextBox({ annotation, scale }: Props) {
       commit();
       committedThisSession.current = true;
     }
+    // setEditing(true) is async — the DOM still has contentEditable="false",
+    // which makes the div unfocusable, so focus() would no-op and typing
+    // would land on <body> (where useToolShortcuts hijacks letter keys).
+    // Promote the attribute now; React's next render agrees on "true".
+    el.contentEditable = 'true';
     el.focus();
     placeCaretAtEnd(el);
     clearPendingFocus();
@@ -98,6 +103,9 @@ export function TextBox({ annotation, scale }: Props) {
     committedThisSession.current = true;
     const el = editRef.current;
     if (el) {
+      // Same reason as the auto-focus useEffect: contentEditable hasn't
+      // re-rendered yet, so the div isn't focusable. Promote it directly.
+      el.contentEditable = 'true';
       el.focus();
       placeCaretAtEnd(el);
     }
