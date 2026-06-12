@@ -1,0 +1,9 @@
+/* Base resets live here; everything else is in App.css. */
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
