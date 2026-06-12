@@ -10,6 +10,8 @@ interface Props {
 const FONT_STACK: Record<TextAnnotation['fontFamily'], string> = {
   Helvetica: 'Helvetica, Arial, sans-serif',
   Times: 'Times, "Times New Roman", serif',
+  Courier: '"Courier New", Courier, monospace',
+  DancingScript: '"Dancing Script", cursive',
 };
 
 // Distinguish a click (enter edit) from a drag (move). Pointer must travel

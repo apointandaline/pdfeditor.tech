@@ -9,7 +9,11 @@ export interface BaseAnnotation {
   page: number;
 }
 
-export type FontFamily = 'Helvetica' | 'Times';
+export type FontFamily = 'Helvetica' | 'Times' | 'Courier' | 'DancingScript';
+
+// Fonts that don't ship an italic glyph file; the italic toggle is a no-op
+// for these (we hide it in the UI and ignore it in the PDF embed step).
+export const FONTS_WITHOUT_ITALIC = new Set<FontFamily>(['DancingScript']);
 
 export interface TextAnnotation extends BaseAnnotation {
   kind: 'text';
@@ -107,6 +111,8 @@ export interface ToolStyle {
   strokeWidth: number;        // px
   fontSize: number;           // pt
   fontFamily: FontFamily;
+  bold: boolean;              // text tool style
+  italic: boolean;            // text tool style
   highlighterOpacity: number; // 0..1
   fill: string | null;        // shape fill, null = outline only
 }
@@ -116,6 +122,8 @@ export const DEFAULT_STYLE: ToolStyle = {
   strokeWidth: 2,
   fontSize: 14,
   fontFamily: 'Helvetica',
+  bold: false,
+  italic: false,
   highlighterOpacity: 0.35,
   fill: null,
 };

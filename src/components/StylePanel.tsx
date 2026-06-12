@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useEditorStore } from '../state/editorStore';
 import type { Tool, ToolStyle } from '../types/annotation';
+import { FONTS_WITHOUT_ITALIC } from '../types/annotation';
 import { renderSignature } from '../lib/signature';
 
 const STROKE_TOOLS = new Set<Tool>(['pen', 'highlighter', 'line', 'arrow', 'rect', 'ellipse']);
@@ -79,10 +80,18 @@ export function StylePanel() {
             label="Font"
             value={style.fontFamily}
             options={[
-              { value: 'Helvetica', label: 'Helvetica' },
-              { value: 'Times',     label: 'Times' },
+              { value: 'Helvetica',     label: 'Helvetica' },
+              { value: 'Times',         label: 'Times' },
+              { value: 'Courier',       label: 'Courier' },
+              { value: 'DancingScript', label: 'Dancing Script' },
             ]}
             onChange={(v) => setStyle({ fontFamily: v as ToolStyle['fontFamily'] })}
+          />
+          <StyleToggles
+            bold={style.bold}
+            italic={style.italic}
+            italicSupported={!FONTS_WITHOUT_ITALIC.has(style.fontFamily)}
+            onChange={(patch) => setStyle(patch)}
           />
         </>
       )}
@@ -252,6 +261,39 @@ function SelectField({ label, value, options, onChange }: SelectFieldProps) {
         ))}
       </select>
     </label>
+  );
+}
+
+interface StyleTogglesProps {
+  bold: boolean;
+  italic: boolean;
+  italicSupported: boolean;
+  onChange: (patch: { bold?: boolean; italic?: boolean }) => void;
+}
+function StyleToggles({ bold, italic, italicSupported, onChange }: StyleTogglesProps) {
+  return (
+    <div className="style-field">
+      <span className="style-field__label">Style</span>
+      <button
+        type="button"
+        className={`style-toggle ${bold ? 'style-toggle--active' : ''}`}
+        onClick={() => onChange({ bold: !bold })}
+        title="Bold"
+        style={{ fontWeight: 700 }}
+      >
+        B
+      </button>
+      <button
+        type="button"
+        className={`style-toggle ${italic ? 'style-toggle--active' : ''}`}
+        onClick={() => onChange({ italic: !italic })}
+        disabled={!italicSupported}
+        title={italicSupported ? 'Italic' : 'This font has no italic variant'}
+        style={{ fontStyle: 'italic' }}
+      >
+        I
+      </button>
+    </div>
   );
 }
 

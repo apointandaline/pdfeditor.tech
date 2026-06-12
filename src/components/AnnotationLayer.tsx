@@ -107,6 +107,8 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
         text: '',
         fontSize: style.fontSize,
         fontFamily: style.fontFamily,
+        bold: style.bold,
+        italic: style.italic,
         color: style.color,
       });
       return;

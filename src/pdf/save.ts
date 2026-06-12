@@ -6,10 +6,32 @@ import {
   BlendMode,
 } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import type { Annotation } from '../types/annotation';
+import type { Annotation, FontFamily } from '../types/annotation';
 import { smoothPath } from '../lib/svg-path';
 import { pdfColor } from '../lib/color';
 import { dataUrlMime, dataUrlToBytes } from '../lib/image';
+import dancingScriptRegularUrl from '../assets/fonts/DancingScript-Regular.ttf?url';
+import dancingScriptBoldUrl from '../assets/fonts/DancingScript-Bold.ttf?url';
+
+// Lazy-loaded font bytes — fetched once per session and cached.
+let dancingScriptRegularBytes: ArrayBuffer | null = null;
+let dancingScriptBoldBytes: ArrayBuffer | null = null;
+async function loadDancingScriptBytes(): Promise<{
+  regular: ArrayBuffer;
+  bold: ArrayBuffer;
+}> {
+  if (!dancingScriptRegularBytes) {
+    dancingScriptRegularBytes = await fetch(dancingScriptRegularUrl).then((r) =>
+      r.arrayBuffer(),
+    );
+  }
+  if (!dancingScriptBoldBytes) {
+    dancingScriptBoldBytes = await fetch(dancingScriptBoldUrl).then((r) =>
+      r.arrayBuffer(),
+    );
+  }
+  return { regular: dancingScriptRegularBytes!, bold: dancingScriptBoldBytes! };
+}
 
 // Stamp every annotation onto a copy of the original PDF and return the new
 // bytes. Coordinates in the store are at scale 1.0 with top-left origin —
@@ -26,12 +48,16 @@ export async function savePdf(
   const doc = await PDFDocument.load(originalBytes.slice(0));
   doc.registerFontkit(fontkit);
 
-  // All 8 are PDF standard fonts — no embed payload. Picking the right
-  // variant per-annotation lets us preserve bold/italic detected from the
-  // source PDF (or set via the style panel).
+  // Embed only what the document actually uses — Dancing Script ships ~75KB
+  // per weight and the user might not have any of it.
+  const used = collectUsedFamilies(annotations);
+
+  // Standard PDF fonts have no embed payload, so we always include the three
+  // canonical families even if unused — keeps the lookup table dense.
   const [
     helv, helvB, helvI, helvBI,
     tms,  tmsB,  tmsI,  tmsBI,
+    cour, courB, courI, courBI,
   ] = await Promise.all([
     doc.embedFont(StandardFonts.Helvetica),
     doc.embedFont(StandardFonts.HelveticaBold),
@@ -41,11 +67,27 @@ export async function savePdf(
     doc.embedFont(StandardFonts.TimesRomanBold),
     doc.embedFont(StandardFonts.TimesRomanItalic),
     doc.embedFont(StandardFonts.TimesRomanBoldItalic),
+    doc.embedFont(StandardFonts.Courier),
+    doc.embedFont(StandardFonts.CourierBold),
+    doc.embedFont(StandardFonts.CourierOblique),
+    doc.embedFont(StandardFonts.CourierBoldOblique),
   ]);
   const fonts: FontVariants = {
     Helvetica: { normal: helv, bold: helvB, italic: helvI, boldItalic: helvBI },
     Times:     { normal: tms,  bold: tmsB,  italic: tmsI,  boldItalic: tmsBI  },
+    Courier:   { normal: cour, bold: courB, italic: courI, boldItalic: courBI },
   };
+
+  if (used.has('DancingScript')) {
+    const { regular, bold } = await loadDancingScriptBytes();
+    const [ds, dsB] = await Promise.all([
+      doc.embedFont(regular),
+      doc.embedFont(bold),
+    ]);
+    // Dancing Script has no italic file; italic flag falls back to regular
+    // (the type system also disables the toggle for this family).
+    fonts.DancingScript = { normal: ds, bold: dsB, italic: ds, boldItalic: dsB };
+  }
 
   // Pre-embed every unique image so multiple ImageAnnotations sharing the
   // same data URL only get one copy in the output PDF.
@@ -81,13 +123,25 @@ interface FontGroup {
   italic: EmbeddedFont;
   boldItalic: EmbeddedFont;
 }
-type FontVariants = Record<'Helvetica' | 'Times', FontGroup>;
+type FontVariants = Partial<Record<FontFamily, FontGroup>>;
 
 function pickFontVariant(group: FontGroup, bold: boolean, italic: boolean): EmbeddedFont {
   if (bold && italic) return group.boldItalic;
   if (bold) return group.bold;
   if (italic) return group.italic;
   return group.normal;
+}
+
+function collectUsedFamilies(
+  annotations: Record<number, Annotation[]>,
+): Set<FontFamily> {
+  const out = new Set<FontFamily>();
+  for (const list of Object.values(annotations)) {
+    for (const a of list) {
+      if (a.kind === 'text') out.add(a.fontFamily);
+    }
+  }
+  return out;
 }
 
 function stampAnnotation(
@@ -102,7 +156,8 @@ function stampAnnotation(
     // pdf-lib draws text at the baseline. Place the first line so its
     // baseline sits ~ascent below the top of the textbox (~0.85 * fontSize
     // is the usual ascent for sans-serif).
-    const font = pickFontVariant(fonts[a.fontFamily], a.bold ?? false, a.italic ?? false);
+    const group = fonts[a.fontFamily] ?? fonts.Helvetica!;
+    const font = pickFontVariant(group, a.bold ?? false, a.italic ?? false);
     page.drawText(a.text, {
       x: a.x,
       y: pageHeight - a.y - a.fontSize * 0.85,
