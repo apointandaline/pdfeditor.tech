@@ -87,6 +87,14 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
   // ---------- Layer-level pointerdown: deselect / new annotation ----------
 
   function onPointerDown(e: PointerEvent<HTMLDivElement>) {
+    // Temporary diagnostic — remove once the Text-tool issue is understood.
+    const targetEl = e.target as HTMLElement;
+    console.log('[pdfeditor] layer pointerdown', {
+      tool,
+      sameTarget: e.target === e.currentTarget,
+      targetTag: targetEl?.tagName,
+      targetClass: targetEl?.className,
+    });
     // Bubbled from an annotation child — let the child handle it.
     if (e.target !== e.currentTarget) return;
     const { x, y } = pointerToCanonical(e.clientX, e.clientY);
