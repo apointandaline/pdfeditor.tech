@@ -87,44 +87,28 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
   // ---------- Layer-level pointerdown: deselect / new annotation ----------
 
   function onPointerDown(e: PointerEvent<HTMLDivElement>) {
-    // Temporary diagnostic — remove once the Text-tool issue is understood.
-    const targetEl = e.target as HTMLElement;
-    console.log(
-      `[pdfeditor] tool=${tool} sameTarget=${e.target === e.currentTarget} ` +
-      `tag=${targetEl?.tagName} class="${targetEl?.className}"`,
-    );
     // Bubbled from an annotation child — let the child handle it.
     if (e.target !== e.currentTarget) return;
     const { x, y } = pointerToCanonical(e.clientX, e.clientY);
 
     if (tool === 'text') {
-      const newId = newAnnotationId();
-      const newW = DEFAULT_TEXT_W;
-      const newH = Math.max(DEFAULT_TEXT_H, style.fontSize + 8);
-      console.log(
-        `[pdfeditor] adding text id=${newId} at x=${x} y=${y} w=${newW} h=${newH} scale=${scale}`,
-      );
+      // The new TextBox auto-focuses its contentEditable in its mount effect.
+      // Without preventDefault, the click that follows this pointerdown
+      // retargets focus to <body> (the layer isn't focusable), the box blurs
+      // with empty text, and onEditBlur removes it — so nothing ever appears.
+      e.preventDefault();
       add({
-        id: newId,
+        id: newAnnotationId(),
         page: pageNumber,
         kind: 'text',
         x, y,
-        w: newW,
-        h: newH,
+        w: DEFAULT_TEXT_W,
+        h: Math.max(DEFAULT_TEXT_H, style.fontSize + 8),
         text: '',
         fontSize: style.fontSize,
         fontFamily: style.fontFamily,
         color: style.color,
       });
-      setTimeout(() => {
-        const after = useEditorStore.getState();
-        const list = after.annotations[pageNumber] ?? [];
-        const found = list.find((a) => a.id === newId);
-        console.log(
-          `[pdfeditor] after add: store has ${list.length} on page ${pageNumber}, ` +
-          `found=${!!found}, selectedId=${after.selectedId}, pendingFocusId=${after.pendingFocusId}`,
-        );
-      }, 0);
       return;
     }
     if (tool === 'select') {
