@@ -36,7 +36,7 @@ export function Landing() {
       <Navbar />
       <main className="landing__main">
         <section className="hero">
-          <div className="hero__label">// PDFEDITOR.TECH · client-side</div>
+          <div className="hero__label">// PDFEDITS.TECH · client-side</div>
           <h1 className="hero__title">
             Edit PDFs in your<br />browser. <em>No upload.</em>
           </h1>

@@ -4,7 +4,7 @@ export function Navbar() {
   return (
     <header className="site-nav">
       <Link to="/" className="site-nav__logo">
-        PDFEDITOR<span className="site-nav__logo-dim">.tech</span>
+        PDFEDITS<span className="site-nav__logo-dim">.tech</span>
       </Link>
       <nav className="site-nav__links">
         <NavLink
