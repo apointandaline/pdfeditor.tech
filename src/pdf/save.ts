@@ -1,9 +1,11 @@
 import {
   PDFDocument,
   type PDFImage,
+  type PDFForm,
   StandardFonts,
   LineCapStyle,
   BlendMode,
+  rgb,
 } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import type { Annotation, FontFamily } from '../types/annotation';
@@ -103,6 +105,15 @@ export async function savePdf(
     }
   }
 
+  // Lazily create the form only if we're actually emitting a form field.
+  // Calling getForm() on a doc that has none still inserts the AcroForm
+  // dictionary, which some viewers treat differently — cheap to skip.
+  let form: PDFForm | null = null;
+  function getForm(): PDFForm {
+    if (form === null) form = doc.getForm();
+    return form;
+  }
+
   const pages = doc.getPages();
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
@@ -110,7 +121,7 @@ export async function savePdf(
     const pageHeight = page.getHeight();
     const list = annotations[pageNumber] ?? [];
     for (const a of list) {
-      stampAnnotation(page, pageHeight, a, fonts, images);
+      stampAnnotation(page, pageHeight, a, fonts, images, getForm);
     }
   }
   return await doc.save();
@@ -150,7 +161,35 @@ function stampAnnotation(
   a: Annotation,
   fonts: FontVariants,
   images: Map<string, PDFImage>,
+  getForm: () => PDFForm,
 ): void {
+  if (a.kind === 'form-field') {
+    // AcroForm field names must be unique per doc; annotation ids are UUIDs.
+    // Prefix keeps them syntactically valid (no leading digit issues, no
+    // accidental dot which AcroForm treats as a hierarchy separator).
+    const form = getForm();
+    const field = form.createTextField(`field_${a.id.replace(/-/g, '')}`);
+    field.setText(a.defaultValue);
+    field.disableMultiline();
+    field.setFontSize(a.fontSize);
+    // Standard Helvetica is always embedded above; AcroForm text fields
+    // render most consistently across viewers when they reference one of
+    // the base-14 fonts, so we don't expose family choice here.
+    const helv = fonts.Helvetica!.normal;
+    field.addToPage(page, {
+      x: a.x,
+      y: pageHeight - a.y - a.h,
+      width: a.w,
+      height: a.h,
+      textColor: pdfColor(a.color),
+      borderColor: rgb(0.6, 0.6, 0.6),
+      borderWidth: 1,
+      font: helv,
+    });
+    return;
+  }
+
+
   if (a.kind === 'text') {
     if (a.text === '') return;
     // pdf-lib draws text at the baseline. Place the first line so its

@@ -86,12 +86,28 @@ export interface ImageAnnotation extends BaseAnnotation {
   src: string;
 }
 
+// A fillable AcroForm text field. Unlike TextAnnotation (which is flat text
+// baked into the PDF at save time), this one is emitted as a real PDF form
+// field — the person opening the saved PDF can type into it. `defaultValue`
+// is what shows up when the PDF is first opened.
+export interface FormFieldAnnotation extends BaseAnnotation {
+  kind: 'form-field';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  defaultValue: string;
+  fontSize: number;
+  color: string;
+}
+
 export type Annotation =
   | TextAnnotation
   | PathAnnotation
   | LineAnnotation
   | ShapeAnnotation
-  | ImageAnnotation;
+  | ImageAnnotation
+  | FormFieldAnnotation;
 
 export type Tool =
   | 'select'
@@ -104,7 +120,8 @@ export type Tool =
   | 'line'
   | 'arrow'
   | 'rect'
-  | 'ellipse';
+  | 'ellipse'
+  | 'form-field';   // rectangular fillable text field — stays editable in the saved PDF
 
 export interface ToolStyle {
   color: string;              // hex, applies to stroke/text

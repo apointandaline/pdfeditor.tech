@@ -13,6 +13,7 @@ import {
   ArrowIcon,
   RectIcon,
   EllipseIcon,
+  FormFieldIcon,
 } from './icons';
 
 interface ToolDef {
@@ -34,6 +35,7 @@ const TOOLS: ToolDef[] = [
   { tool: 'arrow',         label: 'Arrow',          shortcut: 'A', icon: <ArrowIcon /> },
   { tool: 'rect',          label: 'Rectangle',      shortcut: 'R', icon: <RectIcon /> },
   { tool: 'ellipse',       label: 'Ellipse',        shortcut: 'O', icon: <EllipseIcon /> },
+  { tool: 'form-field',    label: 'Form Field',     shortcut: 'B', icon: <FormFieldIcon /> },
 ];
 
 export function ToolRail() {

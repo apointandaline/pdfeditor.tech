@@ -373,6 +373,45 @@ select {
 .text-box__handle--sw { bottom: -5px; left: -5px;   cursor: nesw-resize; }
 .text-box__handle--se { bottom: -5px; right: -5px;  cursor: nwse-resize; }
 
+/* ---------- FormFieldBox (AcroForm text field) ---------- */
+.form-field-box {
+  position: absolute;
+  box-sizing: border-box;
+  /* Thin gray outline mirrors what the saved PDF will render. */
+  border: 1px solid #999;
+  background: rgba(255, 255, 255, 0.4);
+}
+.form-field-box--selected {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 0;
+}
+.form-field-box--selected.form-field-box--editing {
+  outline-style: dashed;
+}
+.form-field-box__input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 2px 4px;
+  font-family: Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
+.form-field-box__handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.form-field-box__handle--nw { top: -5px;    left: -5px;   cursor: nwse-resize; }
+.form-field-box__handle--ne { top: -5px;    right: -5px;  cursor: nesw-resize; }
+.form-field-box__handle--sw { bottom: -5px; left: -5px;   cursor: nesw-resize; }
+.form-field-box__handle--se { bottom: -5px; right: -5px;  cursor: nwse-resize; }
+
 /* Cursor classes on .viewer-wrap propagate to children */
 .cursor-select   .viewer { cursor: default; }
 .cursor-text     .viewer,
@@ -383,7 +422,8 @@ select {
 .cursor-line     .viewer,
 .cursor-arrow    .viewer,
 .cursor-rect     .viewer,
-.cursor-ellipse  .viewer { cursor: crosshair; }
+.cursor-ellipse  .viewer,
+.cursor-form-field .viewer { cursor: crosshair; }
 
 /* ---------- Signature panel ---------- */
 .signature-input {

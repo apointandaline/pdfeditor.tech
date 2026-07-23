@@ -122,7 +122,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return {
         annotations: { ...s.annotations, [a.page]: [...list, a] },
         selectedId: a.id,
-        pendingFocusId: a.kind === 'text' ? a.id : null,
+        pendingFocusId: a.kind === 'text' || a.kind === 'form-field' ? a.id : null,
         past: pushPast(s.past, s),
         future: [],
       };
@@ -135,7 +135,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       for (const a of list) {
         annotations[a.page] = [...(annotations[a.page] ?? []), a];
       }
-      const lastTextId = [...list].reverse().find((a) => a.kind === 'text')?.id ?? null;
+      const lastTextId = [...list].reverse().find(
+        (a) => a.kind === 'text' || a.kind === 'form-field',
+      )?.id ?? null;
       return {
         annotations,
         selectedId: list[list.length - 1].id,

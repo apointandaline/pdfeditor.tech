@@ -14,6 +14,7 @@ const KEY_TO_TOOL: Record<string, Tool> = {
   a: 'arrow',
   r: 'rect',
   o: 'ellipse',
+  b: 'form-field',
 };
 
 export function useToolShortcuts() {

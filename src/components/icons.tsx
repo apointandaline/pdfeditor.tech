@@ -90,3 +90,11 @@ export const EllipseIcon = () => (
     <ellipse cx="10" cy="10" rx="6.5" ry="5" />
   </svg>
 );
+
+export const FormFieldIcon = () => (
+  <svg {...baseProps}>
+    {/* Rectangle with a text caret inside — "fillable box". */}
+    <rect x="3" y="7" width="14" height="6" />
+    <path d="M6 8 L6 12" />
+  </svg>
+);

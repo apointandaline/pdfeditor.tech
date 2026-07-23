@@ -10,8 +10,10 @@ import type {
   LineAnnotation,
   ShapeAnnotation,
   ImageAnnotation,
+  FormFieldAnnotation,
 } from '../types/annotation';
 import { TextBox } from './TextBox';
+import { FormFieldBox } from './FormFieldBox';
 import { SvgAnnotation } from './SvgAnnotation';
 import {
   PathSelectionOverlay,
@@ -32,6 +34,9 @@ interface Props {
 // Default size for a freshly-dropped text box, expressed in scale-1.0 CSS px.
 const DEFAULT_TEXT_W = 160;
 const DEFAULT_TEXT_H = 28;
+// Default size for a form-field box created by a plain click (no drag).
+const DEFAULT_FIELD_W = 200;
+const DEFAULT_FIELD_H = 26;
 // Minimum shape area (scale-1.0 px²) below which we discard the drawing.
 const MIN_SHAPE_AREA = 4;
 // Pointer must travel this many CSS pixels before a click becomes a drag.
@@ -64,6 +69,10 @@ type DrawingState =
       stroke: string;
       fill: string | null;
       width: number;
+    }
+  | {
+      kind: 'form-field';
+      x: number; y: number; w: number; h: number;
     };
 
 export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
@@ -156,6 +165,42 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
     if (tool === 'pen' || tool === 'highlighter') startPath(x, y, tool);
     else if (tool === 'line' || tool === 'arrow') startLine(x, y, tool === 'arrow');
     else if (tool === 'rect' || tool === 'ellipse') startShape(x, y, tool);
+    else if (tool === 'form-field') startFormField(x, y);
+  }
+
+  function startFormField(x0: number, y0: number) {
+    setDrawing({ kind: 'form-field', x: x0, y: y0, w: 0, h: 0 });
+    const onMove = (ev: globalThis.PointerEvent) => {
+      const { x, y } = pointerToCanonical(ev.clientX, ev.clientY);
+      setDrawing((d) => (d?.kind === 'form-field' ? { ...d, w: x - d.x, h: y - d.y } : d));
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      setDrawing((d) => {
+        if (d?.kind !== 'form-field') return null;
+        const r = normalizeRect(d.x, d.y, d.w, d.h);
+        // A plain click (no drag) collapses to zero area — fall back to a
+        // sensible default size so click-to-place still works.
+        const w = r.w < 8 ? DEFAULT_FIELD_W : r.w;
+        const h = r.h < 8 ? DEFAULT_FIELD_H : r.h;
+        add({
+          id: newAnnotationId(),
+          page: pageNumber,
+          kind: 'form-field',
+          x: r.w < 8 ? d.x : r.x,
+          y: r.h < 8 ? d.y : r.y,
+          w,
+          h,
+          defaultValue: '',
+          fontSize: style.fontSize,
+          color: style.color,
+        });
+        return null;
+      });
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
   }
 
   // ---------- Drawing creation (pen / highlighter / line / arrow / shape) ----------
@@ -365,9 +410,11 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
   // ---------- Partition annotations by kind ----------
 
   const textAnnotations: TextAnnotation[] = [];
+  const formFieldAnnotations: FormFieldAnnotation[] = [];
   const svgAnnotations: (PathAnnotation | LineAnnotation | ShapeAnnotation | ImageAnnotation)[] = [];
   for (const a of annotations) {
     if (a.kind === 'text') textAnnotations.push(a);
+    else if (a.kind === 'form-field') formFieldAnnotations.push(a);
     else svgAnnotations.push(a);
   }
   const selectedSvg = svgAnnotations.find((a) => a.id === selectedId) ?? null;
@@ -423,6 +470,9 @@ export function AnnotationLayer({ pageNumber, width, height, scale }: Props) {
       </svg>
       {textAnnotations.map((a) => (
         <TextBox key={a.id} annotation={a} scale={scale} />
+      ))}
+      {formFieldAnnotations.map((a) => (
+        <FormFieldBox key={a.id} annotation={a} scale={scale} />
       ))}
     </div>
   );
@@ -481,6 +531,22 @@ function renderPreview(d: DrawingState, scale: number) {
           />
         )}
       </g>
+    );
+  }
+  if (d.kind === 'form-field') {
+    const r = normalizeRect(d.x, d.y, d.w, d.h);
+    const x = r.x * scale, y = r.y * scale, w = r.w * scale, h = r.h * scale;
+    return (
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        stroke="#8a8a8a"
+        strokeWidth={1}
+        strokeDasharray="4 3"
+        fill="none"
+      />
     );
   }
   const r = normalizeRect(d.x, d.y, d.w, d.h);

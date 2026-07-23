@@ -7,6 +7,7 @@ import { renderSignature } from '../lib/signature';
 const STROKE_TOOLS = new Set<Tool>(['pen', 'highlighter', 'line', 'arrow', 'rect', 'ellipse']);
 const FILL_TOOLS   = new Set<Tool>(['rect', 'ellipse']);
 const TEXT_TOOLS   = new Set<Tool>(['text']);
+const FIELD_TOOLS  = new Set<Tool>(['form-field']);
 
 export function StylePanel() {
   const tool = useEditorStore((s) => s.tool);
@@ -95,6 +96,25 @@ export function StylePanel() {
           />
         </>
       )}
+      {FIELD_TOOLS.has(tool) && (
+        <>
+          <ColorField
+            label="Text color"
+            value={style.color}
+            onChange={(c) => setStyle({ color: c })}
+          />
+          <RangeField
+            label="Size"
+            min={8}
+            max={48}
+            value={style.fontSize}
+            onChange={(v) => setStyle({ fontSize: v })}
+          />
+          <span className="style-panel__hint">
+            Drag on the page to draw a fillable box. Stays editable after save.
+          </span>
+        </>
+      )}
     </div>
   );
 }
@@ -111,6 +131,7 @@ function labelFor(t: Tool): string {
     case 'arrow':       return 'Arrow';
     case 'rect':        return 'Rectangle';
     case 'ellipse':     return 'Ellipse';
+    case 'form-field':  return 'Form Field';
     case 'select':      return 'Select';
   }
 }
