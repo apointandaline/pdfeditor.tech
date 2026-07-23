@@ -281,6 +281,22 @@ export function TextBox({ annotation, scale }: Props) {
           <div className="text-box__handle text-box__handle--ne" onPointerDown={onHandleDown('ne')} />
           <div className="text-box__handle text-box__handle--sw" onPointerDown={onHandleDown('sw')} />
           <div className="text-box__handle text-box__handle--se" onPointerDown={onHandleDown('se')} />
+          <button
+            type="button"
+            className="text-box__delete"
+            title="Delete text (Del)"
+            aria-label="Delete text"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              remove(annotation.id);
+            }}
+          >
+            ×
+          </button>
         </>
       )}
     </div>
