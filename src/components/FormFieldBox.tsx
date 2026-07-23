@@ -26,6 +26,7 @@ export function FormFieldBox({ annotation, scale }: Props) {
   const tool = useEditorStore((s) => s.tool);
   const select = useEditorStore((s) => s.select);
   const patch = useEditorStore((s) => s.patchAnnotation);
+  const remove = useEditorStore((s) => s.removeAnnotation);
   const commit = useEditorStore((s) => s.commit);
   const pendingFocusId = useEditorStore((s) => s.pendingFocusId);
   const clearPendingFocus = useEditorStore((s) => s.clearPendingFocus);
@@ -186,6 +187,24 @@ export function FormFieldBox({ annotation, scale }: Props) {
           <div className="form-field-box__handle form-field-box__handle--ne" onPointerDown={onHandleDown('ne')} />
           <div className="form-field-box__handle form-field-box__handle--sw" onPointerDown={onHandleDown('sw')} />
           <div className="form-field-box__handle form-field-box__handle--se" onPointerDown={onHandleDown('se')} />
+          <button
+            type="button"
+            className="form-field-box__delete"
+            title="Delete field (Del)"
+            aria-label="Delete field"
+            onPointerDown={(e) => {
+              // stopPropagation so the frame's drag/select handler doesn't fire
+              // and swallow the click.
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              remove(annotation.id);
+            }}
+          >
+            ×
+          </button>
         </>
       )}
     </div>
